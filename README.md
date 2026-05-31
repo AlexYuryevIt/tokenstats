@@ -5,16 +5,14 @@
 
 ## Why tokenstats?
 
-| Advantage | Detail |
-|-----------|--------|
-| **Zero telemetry** | No network calls, no data collection, no "phone home" |
-| **Privacy-first** | No personal data, no API keys, no accounts required |
-| **Works offline** | Fully air-gap compatible -- no internet connection needed |
-| **Zero dependencies** | Python stdlib only -- no pip install, no virtualenv |
-| **Read-only access** | Never writes to agent data -- safe for any environment |
-| **CI/CD ready** | JSON/CSV export, exit codes, budget enforcement in pipelines |
-| **MIT license** | Free to use, modify, and distribute |
-| **Cross-platform** | macOS + Linux |
+- **Zero telemetry** -- No network calls, no data collection, no "phone home"
+- **Privacy-first** -- No personal data, no API keys, no accounts required
+- **Works offline** -- Fully air-gap compatible, no internet connection needed
+- **Zero dependencies** -- Python stdlib only, no pip install required
+- **Read-only access** -- Never writes to agent data, safe for any environment
+- **CI/CD ready** -- JSON/CSV export, exit codes, budget enforcement in pipelines
+- **MIT license** -- Free to use, modify, and distribute
+- **Cross-platform** -- macOS + Linux
 
 ## Privacy
 
@@ -143,23 +141,6 @@ tokenstats/
 
 Create `providers/my_agent.py` with three methods (detect, list_sessions, get_messages),
 decorate with @register, add to providers/__init__.py. Done.
-
-## Comparison
-
-| Feature             | tokenstats | Claude --cost | GitHub CLI | Shell script |
-|---------------------|------------|---------------|------------|--------------|
-| Multi-agent         | 9 agents   | 1 agent       | 1 agent    | 1 agent      |
-| Zero dependencies   | yes        | yes           | no         | yes          |
-| Works offline       | yes        | yes           | no         | yes          |
-| Grade A–D analysis  | yes        | no            | no         | no           |
-| Anomaly Z-score     | yes        | no            | no         | no           |
-| Session compare     | yes        | no            | no         | no           |
-| Trends (ASCII)      | yes        | no            | no         | no           |
-| Monthly report      | yes        | no            | no         | no           |
-| Budget tracking     | yes        | no            | no         | no           |
-| Export JSON/CSV     | yes        | no            | no         | no           |
-| Outlier detection   | yes        | no            | no         | no           |
-| Per-project stats   | yes        | no            | no         | no           |
 
 ## CI/CD integration
 
