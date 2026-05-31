@@ -57,7 +57,6 @@ class OpenCode(BaseProvider):
         """)
         sessions = []
         for r in cur.fetchall():
-            # Access SQLite Row by index or name consistently
             sid = r[0]
             title = r[1] or ""
             steps = db.execute(

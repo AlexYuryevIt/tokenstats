@@ -89,7 +89,6 @@ class Cline(BaseProvider):
             return []
         try:
             data = json.loads(path.read_text())
-            # Normalize list vs dict structure
             if isinstance(data, list):
                 return data
             elif isinstance(data, dict):

@@ -28,7 +28,7 @@
   },
   "type": "module",
   "bin": {
-    "tokenstats": "./bin/tokenstats.js"
+    "tokenstats": "bin/tokenstats.js"
   },
   "files": [
     "bin/",
