@@ -1,0 +1,50 @@
+{
+  "name": "tokenstats",
+  "version": "1.0.0",
+  "description": "Token usage statistics for AI coding agents. OpenCode, Claude Code, Cursor, Cline. Zero telemetry, zero network, zero data collection.",
+  "keywords": [
+    "tokens",
+    "token-count",
+    "token-usage",
+    "token-cost",
+    "ai",
+    "opencode",
+    "claude-code",
+    "cursor",
+    "cline",
+    "cost-tracking",
+    "privacy-first",
+    "token-stats"
+  ],
+  "homepage": "https://github.com/AlexYuryevIt/tokenstats",
+  "license": "MIT",
+  "author": "Alex Yuryev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexYuryevIt/tokenstats.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AlexYuryevIt/tokenstats/issues"
+  },
+  "type": "module",
+  "bin": {
+    "tokenstats": "./bin/tokenstats.js"
+  },
+  "files": [
+    "bin/",
+    "python/",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
