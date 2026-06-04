@@ -182,9 +182,8 @@ def cmd_list(all_sessions: list[Session], provider_filter: Optional[str] = None)
 
     sep = "\u2500" * 130
     print(f"  {sep}")
-    print(
-        f"  {_c('1', f"{'':>4} {'ID':<24} {'Provider':<10} {'Title':<50} {'Input':>10} {'Output':>10} {'Cache':>10} {'Steps':>6}")}"
-    )
+    header_str = f"{'':>4} {'ID':<24} {'Provider':<10} {'Title':<50} {'Input':>10} {'Output':>10} {'Cache':>10} {'Steps':>6}"
+    print(f"  {_c('1', header_str)}")
     print(f"  {sep}")
 
     for i, s in enumerate(all_sessions, 1):
