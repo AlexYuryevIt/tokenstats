@@ -1,6 +1,6 @@
 {
   "name": "tokenstats",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Token usage statistics for AI coding agents. OpenCode, Claude Code, Cursor, Cline. Zero telemetry, zero network, zero data collection.",
   "keywords": [
     "tokens",
