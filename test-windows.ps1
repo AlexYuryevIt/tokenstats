@@ -42,10 +42,9 @@ $StatsDir = Join-Path $Root "python"
 
 # Must run -m stats from the python/ directory so Python can find the module
 function Invoke-Stats {
-    param([string[]]$Args)
     Push-Location $StatsDir
     try {
-        & $PythonCmd -m stats @Args 2>&1
+        & $PythonCmd -m stats @args 2>&1
     } finally {
         Pop-Location
     }
