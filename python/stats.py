@@ -224,7 +224,8 @@ def cmd_detail(session: Session):
     def _row(label, val, pct_val=None, pct_of=None):
         pct_s = f"  {pct(pct_val, pct_of):5.1f}%" if pct_val is not None and pct_of else ""
         denom = max(pct_of, val, 1) if pct_of is not None else val or 1
-        return f"  {_c('97', f'{label + ':':<25}')} {format_num(val):>12}  {bar(val / denom, 15)} {pct_s}"
+        padded_label = f"{label + ':' :<25}"
+        return f"  {_c('97', padded_label)} {format_num(val):>12}  {bar(val / denom, 15)} {pct_s}"
 
     print(f"  {_c('1', 'Token usage')}")
     print(f"  {'\u2500' * 60}")
@@ -649,7 +650,8 @@ def cmd_digest(all_sessions: list[Session]):
     # Per-provider breakdown
     print(f"  {_c('1', 'Per provider')}")
     print(f"  {'\u2500' * 70}")
-    print(f"  {_c('1', f'{'Provider':<14} {'Sessions':>8} {'Input':>12} {'Output':>12} {'Cost':>12}')}")
+    digest_hdr = f"{'Provider':<14} {'Sessions':>8} {'Input':>12} {'Output':>12} {'Cost':>12}"
+    print(f"  {_c('1', digest_hdr)}")
     for pname in sorted(providers):
         ps = providers[pname]
         p_in = sum(s.input_tokens for s in ps)
@@ -796,8 +798,12 @@ def cmd_compare(s1: Session, s2: Session):
     print(f"  {'\u2500' * 100}")
     label_a = (s1.title or "(untitled)")[:36]
     label_b = (s2.title or "(untitled)")[:36]
-    print(f"  {_c('1', f'{'':>42}')}  {_c('36', f'{label_a:<42}')}  {_c('36', f'{label_b:<42}')}")
-    print(f"  {_c('1', f'{'Metric':<30}')}  {_c('1', f'{'Session A':<20}')}  {_c('1', f'{'Session B':<20}')}  {'Diff'}")
+    empty_col = f"{'':>42}"
+    metric_hdr = f"{'Metric':<30}"
+    a_hdr = f"{'Session A':<20}"
+    b_hdr = f"{'Session B':<20}"
+    print(f"  {_c('1', empty_col)}  {_c('36', f'{label_a:<42}')}  {_c('36', f'{label_b:<42}')}")
+    print(f"  {_c('1', metric_hdr)}  {_c('1', a_hdr)}  {_c('1', b_hdr)}  {'Diff'}")
 
     pairs = [
         ("Provider", s1.provider, s2.provider, "s"),

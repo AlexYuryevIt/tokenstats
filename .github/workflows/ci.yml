@@ -40,8 +40,10 @@ jobs:
         run: python -m stats budget
       - name: Unknown provider (expected error)
         run: python -m stats --provider nonexistent 2>&1 && exit 1 || echo "Expected error ok"
+        shell: bash
       - name: Invalid session ID (expected error)
         run: python -m stats nonexistent-id 2>&1 && exit 1 || echo "Expected error ok"
+        shell: bash
       - name: Python compile check
         run: |
           python -m py_compile stats.py
@@ -80,5 +82,6 @@ jobs:
         run: node bin/tokenstats.js budget
       - name: Unknown provider via Node (expected error)
         run: node bin/tokenstats.js --provider nonexistent 2>&1 && exit 1 || echo "Expected error ok"
+        shell: bash
       - name: Node syntax check
         run: node --check bin/tokenstats.js
