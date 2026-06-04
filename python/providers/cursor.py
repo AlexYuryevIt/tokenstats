@@ -9,6 +9,7 @@ Linux:
   ~/.config/Cursor/User/globalStorage/state.vscdb
 """
 import json
+import os
 import sqlite3
 from pathlib import Path
 from typing import Optional
@@ -20,6 +21,7 @@ from .base import BaseProvider, register
 CURSOR_DB_CANDIDATES = [
     Path.home() / "Library/Application Support/Cursor/User/globalStorage/state.vscdb",
     Path.home() / ".config/Cursor/User/globalStorage/state.vscdb",
+    Path(os.environ.get("APPDATA", "")) / "Cursor" / "User" / "globalStorage" / "state.vscdb",
 ]
 
 CURSOR_AGENT_DIR = Path.home() / ".cursor/projects"

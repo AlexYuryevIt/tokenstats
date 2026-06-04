@@ -11,6 +11,7 @@ DB_CANDIDATES = [
     Path.home() / ".local/share/opencode/opencode.db",
     Path.home() / ".opencode/opencode.db",
     Path.home() / "Library/Application Support/opencode/opencode.db",
+    Path(os.environ.get("APPDATA", "")) / "opencode" / "opencode.db",
 ]
 
 
@@ -74,7 +75,7 @@ class OpenCode(BaseProvider):
                 except json.JSONDecodeError:
                     pass
             dir_raw = r[10] or ""
-            project = dir_raw.rstrip("/").split("/")[-1] if dir_raw else ""
+            project = Path(dir_raw).name if dir_raw else ""
 
             sessions.append(Session(
                 id=sid,

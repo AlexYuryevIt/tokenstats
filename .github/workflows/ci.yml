@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [main, windows-support]
+  pull_request:
+    branches: [main]
+
+jobs:
+
+  test-python:
+    name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.11", "3.12"]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Python info
+        run: python --version
+      - name: --help
+        run: python -m stats --help
+      - name: --list-providers
+        run: python -m stats --list-providers
+      - name: shell-integration (bash)
+        run: python -m stats shell-integration
+      - name: shell-integration --powershell
+        run: python -m stats shell-integration --powershell
+      - name: Handle missing agent gracefully
+        run: python -m stats
+      - name: Budget (no crash)
+        run: python -m stats budget
+      - name: Unknown provider (expected error)
+        run: python -m stats --provider nonexistent 2>&1 && exit 1 || echo "Expected error ok"
+        shell: bash
+      - name: Invalid session ID (expected error)
+        run: python -m stats nonexistent-id 2>&1 && exit 1 || echo "Expected error ok"
+        shell: bash
+      - name: Python compile check
+        run: |
+          python -m py_compile stats.py
+          python -m py_compile models.py
+          python -m py_compile providers/__init__.py
+          for f in providers/*.py; do python -m py_compile "$f"; done
+        shell: bash
+
+  test-node:
+    name: Node ${{ matrix.node-version }} on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node-version: ["18", "20", "22"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Node info
+        run: node --version
+      - name: --help via Node
+        run: node bin/tokenstats.js --help
+      - name: --list-providers via Node
+        run: node bin/tokenstats.js --list-providers
+      - name: shell-integration via Node
+        run: node bin/tokenstats.js shell-integration
+      - name: shell-integration --powershell via Node
+        run: node bin/tokenstats.js shell-integration --powershell
+      - name: Budget via Node (no crash)
+        run: node bin/tokenstats.js budget
+      - name: Unknown provider via Node (expected error)
+        run: node bin/tokenstats.js --provider nonexistent 2>&1 && exit 1 || echo "Expected error ok"
+        shell: bash
+      - name: Node syntax check
+        run: node --check bin/tokenstats.js
