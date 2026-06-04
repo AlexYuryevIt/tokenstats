@@ -6,6 +6,7 @@ Data location:
   ~/.config/goose/sessions/*.json
 """
 import json
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -16,6 +17,7 @@ from .base import BaseProvider, register
 CANDIDATE_DIRS = [
     Path.home() / ".local/share/goose/sessions",
     Path.home() / ".config/goose/sessions",
+    Path(os.environ.get("APPDATA", "")) / "Block" / "goose" / "data" / "sessions",
 ]
 
 

@@ -1,32 +1,39 @@
 #!/usr/bin/env node
-/**
- * tokenstats — token usage statistics for AI coding agents.
- * Zero telemetry. Zero network. Zero data collection.
- *
- * Thin wrapper that runs the Python analyzer.
- * Requires Python 3 (installed by default on macOS and most Linux distros).
- */
 
 import { execSync } from "child_process";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import { platform } from "os";
 
 const DIR = dirname(fileURLToPath(import.meta.url));
 const PYTHON_DIR = join(DIR, "..", "python");
 
-try {
-  execSync("python3 --version", { stdio: "ignore" });
-} catch {
+const isWin = platform() === "win32";
+const pythonCandidates = isWin ? ["python3", "python", "py -3"] : ["python3"];
+
+let pythonCmd = null;
+for (const cmd of pythonCandidates) {
+  try {
+    execSync(`${cmd} --version`, { stdio: "ignore" });
+    pythonCmd = cmd;
+    break;
+  } catch {
+    continue;
+  }
+}
+
+if (!pythonCmd) {
   console.error("Python 3 is required but not found.");
   console.error("Install: https://python.org");
   process.exit(1);
 }
 
 const args = process.argv.slice(2);
-const cmd = `cd "${PYTHON_DIR}" && python3 -m stats ${args.map(a => `"${a}"`).join(" ")}`;
+const argsStr = args.map(a => `"${a}"`).join(" ");
+const cmd = `cd "${PYTHON_DIR}" && ${pythonCmd} -m stats ${argsStr}`;
 
 try {
-  execSync(cmd, { stdio: "inherit", env: { ...process.env, PYTHONUNBUFFERED: "1" } });
+  execSync(cmd, { stdio: "inherit", env: { ...process.env, PYTHONUNBUFFERED: "1" }, shell: isWin ? "cmd.exe" : true });
 } catch (e) {
   process.exit(e.status || 1);
 }

@@ -24,6 +24,7 @@ Security: Zero telemetry. Zero network. Zero data collection.
 """
 
 import json
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -35,7 +36,11 @@ from models import Session, Message
 
 # ─── Config paths ──────────────────────────────────────────────────────────
 
-CONFIG_DIR = Path.home() / ".config/tokenstats"
+if sys.platform == "win32":
+    _config_base = Path(os.environ.get("APPDATA", str(Path.home() / "AppData" / "Roaming")))
+else:
+    _config_base = Path.home() / ".config"
+CONFIG_DIR = _config_base / "tokenstats"
 BUDGET_FILE = CONFIG_DIR / "budget.json"
 
 def _load_budget() -> dict:
@@ -1047,7 +1052,7 @@ def cmd_report(all_sessions: list[Session], month_str: str):
     print()
 
 
-def cmd_shell_integration():
+def cmd_shell_integration(powershell: bool = False):
     cmds = [
         ("analyze", "Analyze a session"),
         ("digest", "Usage digest"),
@@ -1059,14 +1064,23 @@ def cmd_shell_integration():
         ("search", "Search sessions"),
         ("outliers", "Find anomalies"),
     ]
-    print("# Add to ~/.zshrc or ~/.bashrc:")
-    print("eval \"$(tokenstats shell-integration)\"")
-    print()
-    for cmd, desc in cmds:
-        print(f"ts-{cmd}() {{ tokenstats {cmd} \"$@\"; }}  # {desc}")
-    print()
-    print("# Generic shortcut")
-    print('ts() { if [ $# -eq 0 ]; then tokenstats; else tokenstats "$@"; fi; }')
+    if powershell:
+        print("# Add to your PowerShell profile ($PROFILE):")
+        print()
+        for cmd, desc in cmds:
+            print(f"function ts-{cmd} {{ tokenstats {cmd} @args }}  # {desc}")
+        print()
+        print("# Generic shortcut")
+        print('function ts { if ($args.Count -eq 0) { tokenstats } else { tokenstats @args } }')
+    else:
+        print("# Add to ~/.zshrc or ~/.bashrc:")
+        print("eval \"$(tokenstats shell-integration)\"")
+        print()
+        for cmd, desc in cmds:
+            print(f"ts-{cmd}() {{ tokenstats {cmd} \"$@\"; }}  # {desc}")
+        print()
+        print("# Generic shortcut")
+        print('ts() { if [ $# -eq 0 ]; then tokenstats; else tokenstats "$@"; fi; }')
 
 
 def cmd_search(all_sessions: list[Session], query: str):
@@ -1110,13 +1124,15 @@ def print_help():
     print(f"    tokenstats outliers                             Find unusual sessions")
     print(f"    tokenstats export --format json|csv             Export all data")
     print(f"    tokenstats budget [--set N]                     Budget tracking")
-    print(f"    tokenstats shell-integration                     Generate ts/ts-* shims")
+    print(f"    tokenstats shell-integration                     Generate ts/ts-* shims (bash/zsh)")
+    print(f"    tokenstats shell-integration --powershell        Generate ts/ts-* shims (PowerShell)")
     print(f"    tokenstats --list-providers                     Available agents")
     print(f"    tokenstats --help                                This message")
     print()
     print(f"  {_c('36', 'Shell shortcuts:')}")
     print(f"  {_c('33', 'tokenstats shell-integration')}  Generate ts/ts-analyze/ts-digest/...")
     print(f"    eval \"$(tokenstats shell-integration)\"  Activate in shell")
+    print(f"    tokenstats shell-integration --powershell  | Add to $PROFILE  (PowerShell)")
     print()
     print(f"  {_c('36', 'Supported agents:')}")
     agents = all_providers()
@@ -1135,6 +1151,8 @@ def print_help():
 
 
 def main():
+    if sys.platform == "win32":
+        os.system("")
     args = sys.argv[1:]
 
     provider_filter = None
@@ -1224,7 +1242,7 @@ def main():
         cmd_budget(all_sessions, args[1:])
 
     elif args[0] == "shell-integration":
-        cmd_shell_integration()
+        cmd_shell_integration("--powershell" in args)
 
     elif args[0] == "search" and len(args) >= 2:
         cmd_search(all_sessions, " ".join(args[1:]))

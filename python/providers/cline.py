@@ -6,12 +6,19 @@ Data locations:
   ~/.cline/data/taskHistory.json                              (task index)
 """
 import json
+import os
+import sys
 from pathlib import Path
 from models import Session, Message
 from .base import BaseProvider, register
 
 
 CLINE_DATA = Path.home() / ".cline/data"
+
+if sys.platform == "win32":
+    _cline_vscode = Path(os.environ.get("APPDATA", "")) / "Code" / "User" / "globalStorage" / "saoudrizwan.claude-dev"
+else:
+    _cline_vscode = None
 
 
 @register
@@ -21,22 +28,27 @@ class Cline(BaseProvider):
 
     @classmethod
     def detect(cls) -> bool:
-        task_history = CLINE_DATA / "taskHistory.json"
-        return task_history.is_file()
+        if (CLINE_DATA / "taskHistory.json").is_file():
+            return True
+        if _cline_vscode and (_cline_vscode / "state" / "taskHistory.json").is_file():
+            return True
+        return False
 
     @classmethod
     def _task_history(cls) -> list[dict]:
-        path = CLINE_DATA / "taskHistory.json"
-        if not path.is_file():
-            return []
-        try:
-            data = json.loads(path.read_text())
-            if isinstance(data, list):
-                return data
-            if isinstance(data, dict):
-                return data.get("tasks", data.get("history", []))
-        except (json.JSONDecodeError, OSError):
-            pass
+        candidates = [CLINE_DATA / "taskHistory.json"]
+        if _cline_vscode:
+            candidates.append(_cline_vscode / "state" / "taskHistory.json")
+        for path in candidates:
+            if path.is_file():
+                try:
+                    data = json.loads(path.read_text())
+                    if isinstance(data, list):
+                        return data
+                    if isinstance(data, dict):
+                        return data.get("tasks", data.get("history", []))
+                except (json.JSONDecodeError, OSError):
+                    pass
         return []
 
     @classmethod
@@ -84,17 +96,19 @@ class Cline(BaseProvider):
     @classmethod
     def _load_transcript(cls, task_id: str) -> list[dict]:
         """Load conversation transcript from JSON file."""
-        path = CLINE_DATA / "tasks" / task_id / "api_conversation_history.json"
-        if not path.is_file():
-            return []
-        try:
-            data = json.loads(path.read_text())
-            if isinstance(data, list):
-                return data
-            elif isinstance(data, dict):
-                return data.get("conversations", data.get("messages", data.get("history", [])))
-        except (json.JSONDecodeError, OSError):
-            pass
+        candidates = [CLINE_DATA / "tasks" / task_id / "api_conversation_history.json"]
+        if _cline_vscode:
+            candidates.append(_cline_vscode / "tasks" / task_id / "api_conversation_history.json")
+        for path in candidates:
+            if path.is_file():
+                try:
+                    data = json.loads(path.read_text())
+                    if isinstance(data, list):
+                        return data
+                    elif isinstance(data, dict):
+                        return data.get("conversations", data.get("messages", data.get("history", [])))
+                except (json.JSONDecodeError, OSError):
+                    pass
         return []
 
     @classmethod
