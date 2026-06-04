@@ -1,5 +1,5 @@
 # tokenstats Windows smoke test
-# Run from the repo root: pwsh -File test-windows.ps1
+# Run from the repo root: powershell -File test-windows.ps1
 # Or paste directly into PowerShell
 
 $Pass = 0
@@ -40,8 +40,19 @@ Test-Step "py -3 --version (optional)" {
 $PythonCmd = "python"
 $StatsDir = Join-Path $Root "python"
 
+# Must run -m stats from the python/ directory so Python can find the module
+function Invoke-Stats {
+    param([string[]]$Args)
+    Push-Location $StatsDir
+    try {
+        & $PythonCmd -m stats @Args 2>&1
+    } finally {
+        Pop-Location
+    }
+}
+
 Test-Step "python -m stats --help" {
-    $out = & $PythonCmd -m stats --help 2>&1
+    $out = Invoke-Stats --help
     $s = "$out"
     if ($s -notmatch "tokenstats") { throw "--help missing 'tokenstats'" }
     if ($s -notmatch "shell-integrations.*--powershell") {
@@ -51,20 +62,20 @@ Test-Step "python -m stats --help" {
 }
 
 Test-Step "python -m stats --list-providers" {
-    $out = & $PythonCmd -m stats --list-providers 2>&1
+    $out = Invoke-Stats --list-providers
     $s = "$out"
     if ($s -notmatch "opencode") { throw "--list-providers missing opencode" }
 }
 
 Test-Step "python -m stats shell-integration (bash)" {
-    $out = & $PythonCmd -m stats shell-integration 2>&1
+    $out = Invoke-Stats shell-integration
     $s = "$out"
     if ($s -notmatch "ts\(\)") { throw "bash shell-integration missing ts()" }
     if ($s -notmatch "Add to") { throw "bash shell-integration missing instructions" }
 }
 
 Test-Step "python -m stats shell-integration --powershell" {
-    $out = & $PythonCmd -m stats shell-integration --powershell 2>&1
+    $out = Invoke-Stats shell-integration --powershell
     $s = "$out"
     if ($s -notmatch "function ts-analyze") { throw "PowerShell output missing function ts-analyze" }
     if ($s -notmatch '\$PROFILE') { throw "PowerShell output missing `$PROFILE" }
@@ -72,14 +83,14 @@ Test-Step "python -m stats shell-integration --powershell" {
 }
 
 Test-Step "python -m stats (no agents, should not crash)" {
-    $out = & $PythonCmd -m stats 2>&1
+    $out = Invoke-Stats
     # Should either list sessions or say "no agents" — either way, no exception
     $exitOk = $LASTEXITCODE -eq 0 -or $LASTEXITCODE -eq 1
     if (-not $exitOk) { throw "Exit code $LASTEXITCODE (expected 0 or 1)" }
 }
 
 Test-Step "python -m stats budget (no crash)" {
-    $out = & $PythonCmd -m stats budget 2>&1
+    $out = Invoke-Stats budget
     $s = "$out"
     # Should either show budget or say "No sessions" — either is fine
     if ($LASTEXITCODE -gt 1) { throw "Exit code $LASTEXITCODE" }
@@ -115,11 +126,12 @@ Test-Step "node bin/tokenstats.js shell-integration --powershell" {
 # ─── 4. ANSI / VT100 on Windows ───────────────────────────────────────
 
 Test-Step "ANSI escape codes in --help" {
-    $out = & $PythonCmd -m stats --help 2>&1
+    $out = Invoke-Stats --help
     $s = "$out"
     if ($s -match '\\033\[') { throw "ANSI codes are literal instead of rendered" }
     # Should have actual ESC byte (0x1B)
-    if ($s -notmatch "`e[") { 
+    $esc = [char]27
+    if ($s -notmatch "${esc}\[") { 
         # On some terminal configurations, ANSI may be stripped
         # This is acceptable — just confirm no crash
         Write-Host "WARN (no ESC detected, likely stripped by terminal) " -ForegroundColor Yellow
