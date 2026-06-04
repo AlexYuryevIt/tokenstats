@@ -85,7 +85,7 @@ _U.sigma   = '\u03c3'   # σ
 
 def format_num(n):
     if n is None:
-        return "_U.mdash"
+        return _U.mdash
     if isinstance(n, float):
         return f"{n:,.2f}"
     return f"{n:,}"
@@ -102,14 +102,14 @@ def bar(ratio, width=20, high_is_good=True):
         color = "31" if ratio < 0.3 else ("33" if ratio < 0.6 else "32")
     else:
         color = "32" if ratio < 0.3 else ("33" if ratio < 0.6 else "31")
-    return _c(color, "_U.block" * filled) + _c("2", "_U.shade" * empty)
+    return _c(color, _U.block * filled) + _c("2", _U.shade * empty)
 
 
 
 
 def ts_str(ts):
     if not ts:
-        return "_U.mdash"
+        return _U.mdash
     d = datetime.fromtimestamp(ts / 1000, tz=timezone.utc)
     return d.strftime("%d %b %Y %H:%M")
 
@@ -135,11 +135,11 @@ def _load_all(provider_filter: Optional[str] = None) -> list[Session]:
     if provider_filter:
         p = get_provider(provider_filter)
         if not p:
-            print(_c("31", f"_U.xmark Unknown provider '{provider_filter}'"))
+            print(_c("31", f"{_U.xmark} Unknown provider '{provider_filter}'"))
             print(f"  Available: {', '.join(p.name for p in all_providers())}")
             sys.exit(1)
         if not p.detect():
-            print(_c("31", f"_U.xmark Provider '{provider_filter}' has no data on this machine"))
+            print(_c("31", f"{_U.xmark} Provider '{provider_filter}' has no data on this machine"))
             sys.exit(1)
         providers = [p]
 
@@ -203,7 +203,7 @@ def cmd_list(all_sessions: list[Session], provider_filter: Optional[str] = None)
     counts_str = ", ".join(f"{p}: {c}" for p, c in sorted(agent_counts.items()))
     print(f"\n  {_c('1', 'Sessions')}  ({len(all_sessions)} total — {counts_str})\n")
 
-    sep = "_U.hline" * 130
+    sep = _U.hline * 130
     print(f"  {sep}")
     header_str = f"{'':>4} {'ID':<24} {'Provider':<10} {'Title':<50} {'Input':>10} {'Output':>10} {'Cache':>10} {'Steps':>6}"
     print(f"  {_c('1', header_str)}")
@@ -231,7 +231,7 @@ def cmd_list(all_sessions: list[Session], provider_filter: Optional[str] = None)
 
 def cmd_detail(session: Session):
     print(f"\n  {_c('1', 'Session details')}")
-    print(f"  {'_U.hline' * 80}")
+    print(f"  {_U.hline * 80}")
     print(f"  {_c('36', 'Provider:')} {session.provider}")
     print(f"  {_c('36', 'ID:')}      {session.id}")
     print(f"  {_c('36', 'Title:')}   {session.title or '(untitled)'}")
@@ -255,12 +255,12 @@ def cmd_detail(session: Session):
         return f"  {_c('97', padded_label)} {format_num(val):>12}  {bar(val / denom, 15)} {pct_s}"
 
     print(f"  {_c('1', 'Token usage')}")
-    print(f"  {'_U.hline' * 60}")
+    print(f"  {_U.hline * 60}")
     print(_row("Total", total))
     print(_row("Input (prompt)", ti, ti, total))
     print(_row("Output (response)", to, to, total))
     print(
-        f"  {_c('97', '_U.corner Reasoning:'.ljust(25))} {format_num(tr):>12}  {bar(tr / max(to, 1), 15, high_is_good=False)}  {pct(tr, to):5.1f}% of output"
+        f"  {_c('97', f'{_U.corner} Reasoning:'.ljust(25))} {format_num(tr):>12}  {bar(tr / max(to, 1), 15, high_is_good=False)}  {pct(tr, to):5.1f}% of output"
     )
     print(
         f"  {_c('97', 'Cache read:'.ljust(25))} {format_num(tcr):>12}  {bar(tcr / max(ti, 1), 15)}  {pct(tcr, ti):5.1f}% of input"
@@ -271,14 +271,14 @@ def cmd_detail(session: Session):
     messages = _find_messages(session)
     if messages:
         print(f"\n  {_c('1', f'Step-by-step breakdown ({len(messages)} steps)')}")
-        print(f"  {'_U.hline' * 90}")
+        print(f"  {_U.hline * 90}")
         cols = [
             ("#", 4), ("Input", 8), ("Output", 8), ("Reason", 8),
             ("CacheR", 8), ("CacheW", 8), ("Total", 8), ("Cost", 10), ("Finish", 20),
         ]
         hdr = " " + _c("1", "".join(label.rjust(w) for label, w in cols))
         print(hdr)
-        print(f"  {'_U.hline' * 90}")
+        print(f"  {_U.hline * 90}")
 
         for i, m in enumerate(messages, 1):
             step_total = m.input_tokens + m.output_tokens
@@ -290,7 +290,7 @@ def cmd_detail(session: Session):
                 f"{_c('33', f'{dollar_str(m.cost):>10}')} "
                 f"  {_c('2', f'{m.finish_reason[:18]:<20}')}"
             )
-        print(f"  {'_U.hline' * 90}")
+        print(f"  {_U.hline * 90}")
 
     print(
         f"\n  {_c('2', 'Hint: tokenstats analyze ' + session.id + ' — efficiency analysis + tips')}\n"
@@ -330,25 +330,25 @@ def cmd_analyze(session: Session, all_sessions: Optional[list[Session]] = None):
         z_total = (this_total - m_total) / max(sd_total, 1)
 
         if z_total > 2:
-            anomalies.append((_c("31", "_U.warn"), f"Anomalously large ({z_total:.1f}_U.sigma above median)"))
+            anomalies.append((_c("31", _U.warn), f"Anomalously large ({z_total:.1f}{_U.sigma} above median)"))
         elif z_total > 1.5:
-            anomalies.append((_c("33", "_U.warn"), f"Larger than average ({z_total:.1f}_U.sigma above median)"))
+            anomalies.append((_c("33", _U.warn), f"Larger than average ({z_total:.1f}{_U.sigma} above median)"))
         elif z_total < -1.5:
-            anomalies.append((_c("32", "_U.check"), f"Smaller than average ({abs(z_total):.1f}_U.sigma below median)"))
+            anomalies.append((_c("32", _U.check), f"Smaller than average ({abs(z_total):.1f}{_U.sigma} below median)"))
 
         if cost > 0:
             m_cost = median(costs)
             sd_cost = stdev(costs) if len(costs) > 1 else 1
             z_cost = (cost - m_cost) / max(sd_cost, 1)
             if z_cost > 2:
-                anomalies.append((_c("31", "_U.warn"), f"Anomalously expensive ({z_cost:.1f}_U.sigma above median)"))
+                anomalies.append((_c("31", _U.warn), f"Anomalously expensive ({z_cost:.1f}{_U.sigma} above median)"))
 
         this_ratio = to / max(this_total, 1)
         m_ratio = median(raw_ratios)
         if this_ratio > m_ratio * 1.5:
-            anomalies.append((_c("33", "_U.warn"), f"Output ratio higher than typical"))
+            anomalies.append((_c("33", _U.warn), f"Output ratio higher than typical"))
         elif this_ratio < m_ratio * 0.5:
-            anomalies.append((_c("33", "_U.warn"), f"Input ratio higher than typical"))
+            anomalies.append((_c("33", _U.warn), f"Input ratio higher than typical"))
 
     # Derived metrics
     cache_ratio = tcr / ti if ti > 0 else 0
@@ -389,14 +389,14 @@ def cmd_analyze(session: Session, all_sessions: Optional[list[Session]] = None):
             return _c("1;33", "C")
         return _c("1;31", "D")
 
-    print(f"\n  {'_U.hline' * 78}")
+    print(f"\n  {_U.hline * 78}")
     print(f"  {_c('1', f'Efficiency analysis')}  {_c('2', session.id[:36])}")
-    print(f"  {'_U.hline' * 78}")
+    print(f"  {_U.hline * 78}")
     print(f"  {_c('2', 'Title:')}  {session.title or '(untitled)'}")
     print(f"  {_c('2', 'Model:')}  {session.model or '?'}")
     print(f"  {_c('2', 'Grade:')}  {session_grade()}  ({n_steps} steps, "
           f"{format_num(ti)} in / {format_num(to)} out)")
-    print(f"  {'_U.hline' * 78}\n")
+    print(f"  {_U.hline * 78}\n")
 
     print(f"  {_c('1', 'Anomaly detection')}")
     print(f"  {'' :->50}")
@@ -404,7 +404,7 @@ def cmd_analyze(session: Session, all_sessions: Optional[list[Session]] = None):
         for icon, msg in anomalies:
             print(f"  {icon} {_c('97', msg)}")
     else:
-        print(f"  {_c('32', '_U.check No significant anomalies')}  {_c('2', 'this session is typical for your usage')}")
+        print(f"  {_c('32', f'{_U.check} No significant anomalies')}  {_c('2', 'this session is typical for your usage')}")
     print()
 
     print(f"  {_c('1', 'Token overview')}")
@@ -423,7 +423,7 @@ def cmd_analyze(session: Session, all_sessions: Optional[list[Session]] = None):
             color = "31" if filled < length * 0.3 else ("33" if filled < length * 0.6 else "32")
         else:
             color = "32" if filled < length * 0.3 else ("33" if filled < length * 0.6 else "31")
-        return _c(color, "_U.block" * filled) + _c("2", "_U.shade" * empty)
+        return _c(color, _U.block * filled) + _c("2", _U.shade * empty)
 
     max_metric = max(ti, to, tcr, 1)
     pct_in = pct(ti, total)
@@ -444,7 +444,7 @@ def cmd_analyze(session: Session, all_sessions: Optional[list[Session]] = None):
     efficiency_pct = min(cache_ratio / 3 * 50 + (1 - reasoning_ratio) * 40 + max(0, 1 - n_steps / 100) * 10, 100)
     eff_color = "32" if efficiency_pct >= 70 else ("33" if efficiency_pct >= 40 else "31")
     filled = max(0, min(int(efficiency_pct / 100 * 30), 30))
-    print(f"\n  {_c('1', 'Efficiency:')}  {_c(eff_color, '_U.block' * filled + '_U.shade' * (30 - filled))}"
+    print(f"\n  {_c('1', 'Efficiency:')}  {_c(eff_color, _U.block * filled + _U.shade * (30 - filled))}"
           f"  {_c(eff_color, f'{efficiency_pct:.0f}%')}")
     print()
 
@@ -466,8 +466,8 @@ def cmd_analyze(session: Session, all_sessions: Optional[list[Session]] = None):
             s_pct = pct(small, n_steps)
             m_pct = pct(medium, n_steps)
             l_pct = pct(large, n_steps)
-            print(f"  Distribution:  {_c('32', f'_U.square {s_pct:.0f}%')} {_c('33', f'_U.square {m_pct:.0f}%')}"
-                  f" {_c('31', f'_U.square {l_pct:.0f}%')}  "
+            print(f"  Distribution:  {_c('32', f'{_U.square} {s_pct:.0f}%')} {_c('33', f'{_U.square} {m_pct:.0f}%')}"
+                  f" {_c('31', f'{_U.square} {l_pct:.0f}%')}  "
                   f"{_c('2', 'small / medium / large')}")
             # Step bar chart
             bar_w = min(n_steps, 30)
@@ -476,11 +476,11 @@ def cmd_analyze(session: Session, all_sessions: Optional[list[Session]] = None):
                 step_idx = round(idx * (n_steps - 1) / (bar_w - 1)) if bar_w > 1 else 0
                 t = step_totals[step_idx]
                 if t < avg_total_per_step * 0.5:
-                    step_chars += _c("32", "_U.lblock")
+                    step_chars += _c("32", _U.lblock)
                 elif t < avg_total_per_step * 1.5:
-                    step_chars += _c("33", "_U.lblock")
+                    step_chars += _c("33", _U.lblock)
                 else:
-                    step_chars += _c("31", "_U.lblock")
+                    step_chars += _c("31", _U.lblock)
             print(f"  Steps:         {step_chars}")
 
     print(f"  Tool calls:    {tool_call_steps}/{n_steps}  ({_c('33', f'{tool_ratio:.0f}%')})")
@@ -551,19 +551,19 @@ def cmd_analyze(session: Session, all_sessions: Optional[list[Session]] = None):
             tips.append(("good", "Moderate reasoning — healthy balance", []))
         print()
 
-    if cost_dollars > 0:
-        cost_per_step = cost_dollars / max(n_steps, 1)
-        cost_per_input = cost_dollars / max(ti, 1) * 1_000_000  # $ per M tokens
+    if cost > 0:
+        cost_per_step = cost / max(n_steps, 1)
+        cost_per_input = cost / max(ti, 1) * 1_000_000  # $ per M tokens
 
         print(f"  {_c('1', 'Cost')}")
         print(f"  {'' :->50}")
-        print(f"  Total:        {_c('33', f'${cost_dollars:.6f}')}")
+        print(f"  Total:        {_c('33', f'${cost:.6f}')}")
         print(f"  Per step:     {_c('33', f'${cost_per_step:.6f}')}")
         if cost_per_input > 0:
             print(f"  Per 1M in:    {_c('33', f'${cost_per_input:.4f}')}")
-        if cost_dollars > 0.01:
+        if cost > 0.01:
             tips.append(("warning", "Session cost adds up", [
-                f"Total ${cost_dollars:.4f}",
+                f"Total ${cost:.4f}",
                 "Consider smaller models for simple tasks",
             ]))
         print()
@@ -582,33 +582,33 @@ def cmd_analyze(session: Session, all_sessions: Optional[list[Session]] = None):
         print(f"  {_c('97', f'{format_num(total_savable):>10} tokens')} can be saved "
               f"({_c('33', f'{pct_savable:.0f}%')} of session)")
         if cache_savings:
-            print(f"  {_c('32', '_U.up')}  Cache:        +{format_num(cache_savings):>8}  "
+            print(f"  {_c('32', _U.up)}  Cache:        +{format_num(cache_savings):>8}  "
                   f"({_c('2', 'improve cache hit rate')})")
         if step_savings:
-            print(f"  {_c('33', '_U.up')}  Batching:     +{format_num(step_savings):>8}  "
+            print(f"  {_c('33', _U.up)}  Batching:     +{format_num(step_savings):>8}  "
                   f"({_c('2', 'fewer steps = less overhead')})")
         if reasoning_savings:
-            print(f"  {_c('33', '_U.up')}  Reasoning:    +{format_num(reasoning_savings):>8}  "
+            print(f"  {_c('33', _U.up)}  Reasoning:    +{format_num(reasoning_savings):>8}  "
                   f"({_c('2', 'lower reasoningEffort')})")
     else:
-        print(f"  {_c('32', 'Session is already optimal _U.check')}")
+        print(f"  {_c('32', f'Session is already optimal {_U.check}')}")
         print(f"  {_c('2', '  Nothing significant to improve here')}")
     print(f"  {'' :->50}")
 
     if tips:
         print(f"\n  {_c('1', 'Recommendations')}")
-        print(f"  {'_U.hline' * 78}")
+        print(f"  {_U.hline * 78}")
         for severity, title, items in tips:
-            icon = _c("31", "_U.circle") if severity == "critical" else (
-                _c("33", "_U.circle") if severity == "warning" else _c("32", "_U.circle"))
+            icon = _c("31", _U.circle) if severity == "critical" else (
+                _c("33", _U.circle) if severity == "warning" else _c("32", _U.circle))
             has_items = len(items) > 0
             if has_items:
                 print(f"  {icon} {_c('1', title)}")
                 for item in items:
-                    print(f"  {_c('2', '_U.bull')} {item}")
+                    print(f"  {_c('2', _U.bull)} {item}")
             else:
                 print(f"  {icon} {_c('1', title)}")
-        print(f"  {'_U.hline' * 78}")
+        print(f"  {_U.hline * 78}")
 
     print(
         f"\n  {_c('2', 'Edit opencode.json (OpenCode) or settings.json (others) to apply config changes.')}"
@@ -649,7 +649,7 @@ def cmd_digest(all_sessions: list[Session]):
     sessions_day = len(recent) / len(prev) if prev else None
 
     print(f"\n  {_c('1', 'Digest')}  {_c('2', 'overall token usage across all sessions')}")
-    print(f"  {'_U.hline' * 70}")
+    print(f"  {_U.hline * 70}")
 
     print(f"  {_c('97', 'Sessions:      ')} {total_sessions}  "
           f"({sessions_per_day:.1f}/day)")
@@ -663,20 +663,20 @@ def cmd_digest(all_sessions: list[Session]):
     if recent or prev:
         trend_str = ""
         if sessions_day is None:
-            trend_str = _c("32", f'_U.up {len(recent)} vs 0 (new activity)')
+            trend_str = _c("32", f'{_U.up} {len(recent)} vs 0 (new activity)')
         elif sessions_day > 1.5:
-            trend_str = _c("31", f'_U.up {len(recent)} vs {len(prev)} ({(sessions_day - 1) * 100:.0f}% up)')
+            trend_str = _c("31", f'{_U.up} {len(recent)} vs {len(prev)} ({(sessions_day - 1) * 100:.0f}% up)')
         elif sessions_day < 0.5:
-            trend_str = _c("32", f'_U.down {len(recent)} vs {len(prev)} ({(1 - sessions_day) * 100:.0f}% down)')
+            trend_str = _c("32", f'{_U.down} {len(recent)} vs {len(prev)} ({(1 - sessions_day) * 100:.0f}% down)')
         else:
-            trend_str = _c("33", f'_U.right {len(recent)} vs {len(prev)} (steady)')
+            trend_str = _c("33", f'{_U.right} {len(recent)} vs {len(prev)} (steady)')
         print(f"  {_c('97', 'Trend (7d):    ')} {trend_str}")
 
     print()
 
     # Per-provider breakdown
     print(f"  {_c('1', 'Per provider')}")
-    print(f"  {'_U.hline' * 70}")
+    print(f"  {_U.hline * 70}")
     digest_hdr = f"{'Provider':<14} {'Sessions':>8} {'Input':>12} {'Output':>12} {'Cost':>12}"
     print(f"  {_c('1', digest_hdr)}")
     for pname in sorted(providers):
@@ -689,7 +689,7 @@ def cmd_digest(all_sessions: list[Session]):
     # Top 3 largest
     print()
     print(f"  {_c('1', 'Largest sessions')}")
-    print(f"  {'_U.hline' * 70}")
+    print(f"  {_U.hline * 70}")
     sorted_by_total = sorted(all_sessions, key=lambda s: s.input_tokens + s.output_tokens, reverse=True)
     for i, s in enumerate(sorted_by_total[:3], 1):
         total = s.input_tokens + s.output_tokens
@@ -714,7 +714,7 @@ def cmd_outliers(all_sessions: list[Session]):
         return (val - m) / max(sd, 1)
 
     print(f"\n  {_c('1', 'Outliers')}  {_c('2', 'sessions with unusual characteristics')}")
-    print(f"  {'_U.hline' * 70}")
+    print(f"  {_U.hline * 70}")
 
     totals = [s.input_tokens + s.output_tokens for s in all_sessions]
     costs = [s.cost for s in all_sessions]
@@ -781,7 +781,7 @@ def cmd_outliers(all_sessions: list[Session]):
         if s.id in seen_ids:
             continue
         seen_ids.add(s.id)
-        print(f"  {_c('31', '_U.tri')} {_c('1', f'{label:<50}')}  {_c('36', f'{s.id[:20]:<20}')}  "
+        print(f"  {_c('31', _U.tri)} {_c('1', f'{label:<50}')}  {_c('36', f'{s.id[:20]:<20}')}  "
               f"{_c('33', f'{s.provider:<12}')}  {_c('2', (s.title or '')[:24])}")
     print()
 
@@ -822,7 +822,7 @@ def cmd_export(all_sessions: list[Session], fmt: str):
 
 def cmd_compare(s1: Session, s2: Session):
     print(f"\n  {_c('1', 'Comparison')}")
-    print(f"  {'_U.hline' * 100}")
+    print(f"  {_U.hline * 100}")
     label_a = (s1.title or "(untitled)")[:36]
     label_b = (s2.title or "(untitled)")[:36]
     empty_col = f"{'':>42}"
@@ -844,10 +844,10 @@ def cmd_compare(s1: Session, s2: Session):
         ("Cost", dollar_str(s1.cost), dollar_str(s2.cost), "$"),
     ]
 
-    print(f"  {'_U.hline' * 100}")
+    print(f"  {_U.hline * 100}")
     for label, va, vb, typ in pairs:
         if typ == "s":
-            eq = _c("32", "_U.check") if va == vb else _c("33", "_U.xmark")
+            eq = _c("32", _U.check) if va == vb else _c("33", _U.xmark)
             print(f"  {label:<30} {va:<24} {vb:<24} {eq}")
         elif typ == "n":
             diff = int(vb) - int(va)
@@ -856,7 +856,7 @@ def cmd_compare(s1: Session, s2: Session):
             print(f"  {label:<30} {va:<24} {vb:<24} {_c(dc, f'{ds:>6}')}")
         elif typ == "t":
             def _n(v):
-                return int(v.replace(",", "")) if v != "_U.mdash" else 0
+                return int(v.replace(",", "")) if v != _U.mdash else 0
             da, db = _n(va), _n(vb)
             diff = db - da
             p = diff / max(da, 1) * 100
@@ -872,7 +872,7 @@ def cmd_compare(s1: Session, s2: Session):
             print(f"  {label:<30} {va:<24} {vb:<24} {_c(dc, ds)}")
 
     # Winner picker
-    print(f"  {'_U.hline' * 100}")
+    print(f"  {_U.hline * 100}")
     t1 = s1.input_tokens + s1.output_tokens
     t2 = s2.input_tokens + s2.output_tokens
     c1 = s1.cost / 100_000_000
@@ -883,7 +883,7 @@ def cmd_compare(s1: Session, s2: Session):
     elif t2 < t1 and c2 <= c1:
         print(f"{_c('32', 'B uses fewer tokens and costs less')}")
     else:
-        print(f"{_c('33', 'Trade-off _U.mdash depends on priority (speed vs cost)')}")
+        print(f"{_c('33', f'Trade-off {_U.mdash} depends on priority (speed vs cost)')}")
     print()
 
 
@@ -912,7 +912,7 @@ def cmd_trends(all_sessions: list[Session], days: int = 30):
     max_tokens = max((sum(x.input_tokens + x.output_tokens for x in v) for v in days_map.values()), default=1)
 
     print(f"\n  {_c('1', f' Trends (last {days} days)')}")
-    print(f"  {'_U.hline' * 70}")
+    print(f"  {_U.hline * 70}")
 
     # Sessions per day
     print(f"\n  {_c('1', 'Sessions per day')}")
@@ -922,7 +922,7 @@ def cmd_trends(all_sessions: list[Session], days: int = 30):
         filled = int(n / max(max_sessions, 1) * barlen) if n else 0
         pct_val = n / max(max_sessions, 1) * 100
         color = "32" if pct_val > 66 else ("33" if pct_val > 33 else "2")
-        bar_s = _c(color, "_U.block" * filled) + _c("2", "_U.shade" * (barlen - filled))
+        bar_s = _c(color, _U.block * filled) + _c("2", _U.shade * (barlen - filled))
         print(f"  {key}  {bar_s}  {_c('1', str(n) if n else '-')}")
 
     # Tokens per day (top 3 providers)
@@ -930,18 +930,18 @@ def cmd_trends(all_sessions: list[Session], days: int = 30):
     for key in dates:
         sessions = days_map[key]
         if not sessions:
-            print(f"  {key}  {_c('2', '_U.shade' * barlen)}  -")
+            print(f"  {key}  {_c('2', _U.shade * barlen)}  -")
             continue
         total = sum(s.input_tokens + s.output_tokens for s in sessions)
         filled = int(total / max_tokens * barlen)
-        bar_s = _c("34", "_U.block" * filled) + _c("2", "_U.shade" * (barlen - filled))
+        bar_s = _c("34", _U.block * filled) + _c("2", _U.shade * (barlen - filled))
         print(f"  {key}  {bar_s}  {format_num(total)}")
 
     # Summary stats
     active = sum(1 for v in days_map.values() if v)
     total_s = sum(len(v) for v in days_map.values())
     total_t = sum(sum(s.input_tokens + s.output_tokens for s in v) for v in days_map.values())
-    print(f"\n  {_c('2', f'{active}/{days} days active  _U.mdot  {total_s} sessions  _U.mdot  {format_num(total_t)} total tokens')}")
+    print(f"\n  {_c('2', f'{active}/{days} days active  {_U.mdot}  {total_s} sessions  {_U.mdot}  {format_num(total_t)} total tokens')}")
     print()
 
 
@@ -979,14 +979,14 @@ def cmd_budget(all_sessions: list[Session], args: list[str]):
     month_spend_usd = month_spend / 100_000_000
 
     print(f"\n  {_c('1', 'Budget')}  {_c('2', now.strftime('%B %Y'))}")
-    print(f"  {'_U.hline' * 50}")
+    print(f"  {_U.hline * 50}")
 
     if monthly_limit > 0:
         pct_used = (month_spend_usd / monthly_limit * 100) if monthly_limit else 0
         barw = 30
         filled = min(int(pct_used / 100 * barw), barw)
         color = "32" if pct_used < 50 else ("33" if pct_used < 80 else "31")
-        bar_s = _c(color, "_U.block" * filled) + _c("2", "_U.shade" * (barw - filled))
+        bar_s = _c(color, _U.block * filled) + _c("2", _U.shade * (barw - filled))
 
         print(f"  Budget:       ${monthly_limit:.2f}/month")
         print(f"  Spent:        ${month_spend_usd:.4f}")
@@ -995,7 +995,7 @@ def cmd_budget(all_sessions: list[Session], args: list[str]):
         if remaining > 0:
             print(f"  Remaining:    ${remaining:.4f}")
         else:
-            print(f"  {_c('31', f'  _U.warn Exceeded by ${abs(remaining):.4f}')}")
+            print(f"  {_c('31', f'  {_U.warn} Exceeded by ${abs(remaining):.4f}')}")
     else:
         print(f"  Spent:        ${month_spend_usd:.4f}")
         print(f"  No budget set. Use:  {_c('33', 'tokenstats budget --set 50')}")
@@ -1048,7 +1048,7 @@ def cmd_report(all_sessions: list[Session], month_str: str):
     month_name = datetime(year, month, 1).strftime("%B %Y")
 
     print(f"\n  {_c('1', 'Report')}  {_c('2', month_name)}")
-    print(f"  {'_U.hline' * 70}")
+    print(f"  {_U.hline * 70}")
 
     print(f"  Sessions:     {total_sessions}")
     print(f"  Total in:     {format_num(total_in):>12} tokens")
@@ -1061,7 +1061,7 @@ def cmd_report(all_sessions: list[Session], month_str: str):
     # Providers
     if len(providers) > 1:
         print(f"\n  {_c('1', 'By provider')}")
-        print(f"  {'_U.hline' * 70}")
+        print(f"  {_U.hline * 70}")
         for pname in sorted(providers):
             ps = providers[pname]
             p_in = sum(s.input_tokens for s in ps)
@@ -1073,7 +1073,7 @@ def cmd_report(all_sessions: list[Session], month_str: str):
     # Projects
     if projects:
         print(f"\n  {_c('1', 'By project')}")
-        print(f"  {'_U.hline' * 70}")
+        print(f"  {_U.hline * 70}")
         for pname in sorted(projects, key=lambda p: len(projects[p]), reverse=True)[:10]:
             ps = projects[pname]
             p_in = sum(s.input_tokens for s in ps)
@@ -1120,10 +1120,10 @@ def cmd_search(all_sessions: list[Session], query: str):
     matching = [s for s in all_sessions if query_lower in (s.title or "").lower()]
 
     if not matching:
-        print(_c("31", f"_U.xmark No sessions matching '{query}'"))
+        print(_c("31", f"{_U.xmark} No sessions matching '{query}'"))
         return []
 
-    print(f"\n  {_c('1', f'Sessions matching _U.lq{query}_U.rq')}  (found: {len(matching)})\n")
+    print(f"\n  {_c('1', f'Sessions matching {_U.lq}{query}{_U.rq}')}  (found: {len(matching)})\n")
     for i, s in enumerate(matching, 1):
         title = (s.title or "")[:60]
         print(
@@ -1169,7 +1169,7 @@ def print_help():
     print(f"  {_c('36', 'Supported agents:')}")
     agents = all_providers()
     for p in agents:
-        status = _c("32", "_U.check") if p.detect() else _c("2", "_U.mdash")
+        status = _c("32", _U.check) if p.detect() else _c("2", _U.mdash)
         print(f"  {status} {p.name:<12} {p.display_name}")
     print()
     print(f"  {_c('1', 'Security')}")
@@ -1214,7 +1214,7 @@ def main():
 
     no_data_commands = ("digest", "outliers", "--list-providers", "help", "--help", "-h", "export", "budget", "shell-integration")
     if not detect_providers() and args and args[0] not in no_data_commands:
-        print(_c("31", "_U.xmark No supported coding agents detected."))
+        print(_c("31", f"{_U.xmark} No supported coding agents detected."))
         print("  Checked for: " + ", ".join(p.name for p in all_providers()))
         print("  Use --list-providers or --help for details.")
         sys.exit(1)
@@ -1226,11 +1226,11 @@ def main():
 
     elif args[0] == "analyze":
         if len(args) < 2:
-            print(_c("31", "_U.xmark Usage: tokenstats analyze <N|id|last>"))
+            print(_c("31", f"{_U.xmark} Usage: tokenstats analyze <N|id|last>"))
             sys.exit(1)
         s = _resolve_session(all_sessions, args[1])
         if not s:
-            print(_c("31", f"_U.xmark Session '{args[1]}' not found."))
+            print(_c("31", f"{_U.xmark} Session '{args[1]}' not found."))
             sys.exit(1)
         cmd_analyze(s, all_sessions)
 
@@ -1238,7 +1238,7 @@ def main():
         s1 = _resolve_session(all_sessions, args[1])
         s2 = _resolve_session(all_sessions, args[2])
         if not s1 or not s2:
-            print(_c("31", f"_U.xmark Session not found. Use numbers or IDs."))
+            print(_c("31", f"{_U.xmark} Session not found. Use numbers or IDs."))
             sys.exit(1)
         cmd_compare(s1, s2)
 
@@ -1283,7 +1283,7 @@ def main():
     else:
         s = _resolve_session(all_sessions, args[0])
         if not s:
-            print(_c("31", f"_U.xmark Session '{args[0]}' not found."))
+            print(_c("31", f"{_U.xmark} Session '{args[0]}' not found."))
             print("  Use a number from the list, 'last', or a session ID.")
             sys.exit(1)
         cmd_detail(s)
