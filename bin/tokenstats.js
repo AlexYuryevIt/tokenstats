@@ -33,7 +33,7 @@ const argsStr = args.map(a => `"${a}"`).join(" ");
 const cmd = `cd "${PYTHON_DIR}" && ${pythonCmd} -m stats ${argsStr}`;
 
 try {
-  execSync(cmd, { stdio: "inherit", env: { ...process.env, PYTHONUNBUFFERED: "1" }, shell: isWin ? "cmd.exe" : true });
+  execSync(cmd, { stdio: "inherit", env: { ...process.env, PYTHONUNBUFFERED: "1", PYTHONIOENCODING: "utf-8" }, shell: isWin ? "cmd.exe" : true });
 } catch (e) {
   process.exit(e.status || 1);
 }

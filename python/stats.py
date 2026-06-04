@@ -1152,6 +1152,7 @@ def print_help():
 def main():
     if sys.platform == "win32":
         os.system("")
+        sys.stdout.reconfigure(encoding='utf-8')
     args = sys.argv[1:]
 
     provider_filter = None
