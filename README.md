@@ -12,7 +12,7 @@
 - **Read-only access** -- Never writes to agent data, safe for any environment
 - **CI/CD ready** -- JSON/CSV export, exit codes, budget enforcement in pipelines
 - **MIT license** -- Free to use, modify, and distribute
-- **Cross-platform** -- macOS + Linux
+- **Cross-platform** -- macOS, Linux, Windows (PowerShell, cmd.exe, Python launcher)
 
 ## Privacy
 
@@ -40,6 +40,8 @@ in read-only mode. Works fully offline. No API keys, no accounts, no cloud.
 
 ## Quick start
 
+### macOS / Linux
+
 ```bash
 npm install -g tokenstats
 
@@ -56,6 +58,26 @@ tokenstats export --format csv  # Export all data
 tokenstats budget --set 50      # Budget $50/month
 tokenstats shell-integration    # Generate shell shortcuts
 eval "$(tokenstats shell-integration)"  # Activate in ~/.zshrc / ~/.bashrc
+```
+
+### Windows (PowerShell)
+
+```powershell
+npm install -g tokenstats
+
+tokenstats                      # List all sessions
+tokenstats 4                    # Session details by number
+tokenstats analyze 4            # Efficiency analysis
+tokenstats digest               # Overall usage digest
+tokenstats trends --days 14     # Usage charts
+tokenstats report last          # Monthly report
+tokenstats outliers             # Unusual sessions
+tokenstats compare 1 4          # Compare two sessions
+tokenstats search "bug"         # Search by title
+tokenstats export --format csv  # Export all data
+tokenstats budget --set 50      # Budget $50/month
+tokenstats shell-integration --powershell  # Generate PowerShell shortcuts
+tokenstats shell-integration --powershell | Invoke-Expression  # Activate in $PROFILE
 ```
 
 ## Supported agents (9)
@@ -97,6 +119,8 @@ tokenstats --help                                This message
 
 ## Shell shortcuts
 
+### Bash / Zsh
+
 ```bash
 eval "$(tokenstats shell-integration)"  # add to ~/.zshrc or ~/.bashrc
 ```
@@ -113,6 +137,27 @@ eval "$(tokenstats shell-integration)"  # add to ~/.zshrc or ~/.bashrc
 | `ts-budget`     | `tokenstats budget`         |
 | `ts-search`     | `tokenstats search`         |
 | `ts-outliers`   | `tokenstats outliers`       |
+
+### PowerShell
+
+```powershell
+tokenstats shell-integration --powershell | Invoke-Expression
+# Or manually add to your PowerShell profile:
+#   tokenstats shell-integration --powershell >> $PROFILE
+```
+
+| Shortcut          | Long form                   |
+|-------------------|-----------------------------|
+| `ts`              | `tokenstats`                |
+| `ts-analyze`      | `tokenstats analyze`        |
+| `ts-digest`       | `tokenstats digest`         |
+| `ts-compare`      | `tokenstats compare`        |
+| `ts-trends`       | `tokenstats trends`         |
+| `ts-report`       | `tokenstats report`         |
+| `ts-export`       | `tokenstats export`         |
+| `ts-budget`       | `tokenstats budget`         |
+| `ts-search`       | `tokenstats search`         |
+| `ts-outliers`     | `tokenstats outliers`       |
 
 ## Architecture
 
@@ -145,7 +190,7 @@ decorate with @register, add to providers/__init__.py. Done.
 ## CI/CD integration
 
 No dependencies besides Python, works offline, pure stdout. Data sources
-(`~/.config/`, `~/.local/share/`) must be available on the runner -- pass them
+(`~/.config/`, `~/.local/share/`, `%APPDATA%`) must be available on the runner -- pass them
 via CI cache or restore from a previous step.
 
 ```bash
@@ -159,7 +204,7 @@ tokenstats digest
 tokenstats budget
 ```
 
-**GitHub Actions example:**
+**GitHub Actions example (also works on `windows-latest` and `macos-latest`):**
 
 ```yaml
 # .github/workflows/token-usage-audit.yml
@@ -202,7 +247,7 @@ secret management.
 - **Read-only access** -- all DB connections use `mode=ro` with
   `PRAGMA query_only=ON`. Never writes to agent data.
 - **Local files only** -- scoped to `~/.config/`, `~/.local/share/`,
-  `~/.claude/`, `~/.cursor/`. Never accesses files outside home directory.
+  `%APPDATA%`, `~/.claude/`, `~/.cursor/`. Never accesses files outside home directory.
 - **Zero dependencies** -- Python 3 stdlib only (sqlite3, json, csv,
   statistics, pathlib). No pip packages, no npm runtime dependencies.
 - **Fully offline** -- no internet required. Works in air-gapped environments.
